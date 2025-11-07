@@ -1,0 +1,37 @@
+version: '3.8'
+services:
+  mongo:
+    image: mongo:6.0
+    restart: always
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo_data:/data/db
+
+  backend:
+    build:
+      context: ./ecommerce-backend
+    ports:
+      - '5000:5000'
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/ecommerce_store
+      - JWT_SECRET=your_jwt_secret_here
+      - STRIPE_SECRET_KEY=sk_test_51SQp3H3JXBf8RQTrxTY39Zp7KMnw4PojOJJ4oUiuZaKSeEiCHAyCcblHxwLOeYvwYKZPLQpm6LIh5HCkiNdjqfcq00JobPQ2Ku
+      - STRIPE_WEBHOOK_SECRET=whsec_ae06023a423367e7419c868262427b41a8ed68902fb56890a16276a718ac6d6d
+      - NODE_ENV=development
+    depends_on:
+      - mongo
+    volumes:
+      - ./ecommerce-backend:/app
+  frontend:
+    build:
+      context: ./ecommerce-frontend
+    ports:
+      - '3000:80'
+    environment:
+      - VITE_API_URL=http://backend:5000/api
+    depends_on:
+      - backend
+
+volumes:
+  mongo_data:
